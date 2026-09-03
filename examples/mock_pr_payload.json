@@ -1,0 +1,12 @@
+{
+  "action": "opened",
+  "pull_request": {
+    "number": 42,
+    "head": {
+      "ref": "feature-auth-fix"
+    }
+  },
+  "repository": {
+    "name": "antigravity-dev"
+  }
+}
