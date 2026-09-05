@@ -1,61 +1,84 @@
-# System Architecture: Security-First, Repository-Local Action Layer
+# 🚀 ASTra: Security-First, Repository-Local Action Layer
 
-Here is the architectural design for the prototype, detailing the flow from user intent to execution and explanation.
+**ASTra** (AST-based Repository Action layer) is a secure "middleware" bridge for AI Developer Assistants (like GitHub Copilot or local LLM agents). It safely sits between what a developer asks an AI to do and the actual execution of those commands.
 
-```mermaid
-graph TD
-    User([Developer / CI Webhook]) -->|Natural Language Intent & Diffs| CLI[CLI / API Endpoint]
-    
-    subgraph "1. Method-Level Slicer & Parser"
-        CLI --> Parser[Tree-sitter AST Parser]
-        Parser --> Slicer[Code Slicer]
-        Slicer -->|Method-level Context| RAG
-    end
+## The Problem
+Integrating generative AI directly into development environments comes with two major risks:
+1. **Context Blindness (Hallucinations):** Feeding an entire 2,000-line file to an AI to review a 3-line change overwhelms the model, leading to hallucinations.
+2. **Unsafe Execution:** Allowing autonomous agents to execute shell commands directly on a host machine is extremely dangerous (e.g., executing `rm -rf /` or dropping a database).
 
-    subgraph "2. Local Repository RAG"
-        RAG[(Local RAG Store)] 
-        RAG -->|Vector/Graph Index (ChromaDB/DuckDB)| Retriever[Context Retriever]
-        Retriever -->|Enriched Context| Policy
-    end
+## Our Solution (Architecture)
+ASTra decouples generation from execution through five core components:
 
-    subgraph "3. Intent Classifier & Policy Gate"
-        Policy[Risk Policy Engine]
-        Policy --> Classifier[LLM Intent Classifier]
-        Classifier --> Tier1{Tier 1: Read-Only}
-        Classifier --> Tier2{Tier 2: Sandbox Write}
-        Classifier --> Tier3{Tier 3: Destructive}
-    end
+1. **Method-Level AST Slicer:** Uses `tree-sitter` to pinpoint changed lines and extract *only* the specific function/class enclosing it, drastically reducing prompt bloat.
+2. **Local RAG Retrieval:** Uses `ChromaDB` to build an offline vector database of semantic code chunks, giving the AI hyper-relevant context.
+3. **LLM Policy Gate:** An LLM acts as a security guard, reading proposed commands and assigning them a Risk Tier (1=Safe, 2=Write, 3=Destructive).
+4. **Docker Sandbox Executor:** Safely executes Tier 1/2 commands inside an isolated Docker container, while completely blocking Tier 3 commands pending explicit human approval.
+5. **Evidence Explanation Engine:** Links sandbox execution outputs back to the original AST slice to generate transparent Evidence Reports.
 
-    subgraph "4. Execution Harness"
-        Tier1 -->|Auto Execute| Executor[Sandbox Executor]
-        Tier2 -->|Isolated Patch/Test| Executor
-        Tier3 -->|Prompt User| HumanGate[Human Confirmation]
-        HumanGate -->|Approve| Executor
-        HumanGate -->|Reject| Abort[Abort Action]
-        
-        Executor -->|Stdout/Stderr/Coverage| Validator[Feedback Loop]
-        Validator -->|Refine if Failed| Classifier
-    end
+---
 
-    subgraph "5. Explanation Engine"
-        Validator -->|Success/Results| Explainer[Evidence Engine]
-        Explainer -->|Grounded Explanation| User
-        Abort --> Explainer
-    end
+## 🛠️ Quick Start & Setup
 
-    %% Styling
-    classDef safe fill:#e1f5fe,stroke:#03a9f4,stroke-width:2px;
-    classDef warning fill:#fff3e0,stroke:#ff9800,stroke-width:2px;
-    classDef danger fill:#ffebee,stroke:#f44336,stroke-width:2px;
-    
-    class Tier1 safe;
-    class Tier2 warning;
-    class Tier3 danger;
+We have included automated setup scripts for judges to test ASTra quickly!
+
+### 1. Run the Setup Script
+**Windows (PowerShell):**
+```powershell
+.\setup.ps1
 ```
 
-### Component Breakdown
-1. **Slicer (`src/slicer`)**: Uses `tree-sitter` to parse code into ASTs. When given a diff, it extracts only the surrounding method/class, minimizing the context window and avoiding the hallucination-prone whole-file approach.
-2. **Retrieval (`src/retrieval`)**: Embeds method slices and project documentation locally. Retrieves strictly relevant context to ground the LLM's understanding.
-3. **Policy Gate (`src/policy`)**: Classifies the generated command/action. Tier 1 (Safe) executes automatically. Tier 2 executes in a sandbox for testing. Tier 3 (Destructive like `git push` or `rm`) blocks execution pending explicit approval.
-4. **Sandbox (`src/sandbox`)**: A lightweight container or subprocess wrapper that safely captures outputs and traces for the iterative feedback loop.
-5. **Engine (`src/engine`)**: Links the execution trace back to the original AST slice to provide the user with clear, evidence-backed explanations.
+**Linux/Mac:**
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+### 2. Add your API Key
+The setup script creates an `.env` file. Open it and add your OpenAI API key (or point it to a local Ollama instance):
+```
+OPENAI_API_KEY=your_key_here
+```
+
+---
+
+## 💻 Running the Demo
+
+Activate the virtual environment:
+```bash
+# Windows
+.\venv\Scripts\Activate.ps1
+
+# Linux/Mac
+source venv/bin/activate
+```
+
+### Demo 1: Method-Level AST Context Slicing
+See how ASTra intelligently extracts just a specific method rather than feeding the LLM an entire file.
+```bash
+python examples/diff_review.py
+```
+
+### Demo 2: The Security Policy Gate
+See the LLM intercept and classify intents dynamically.
+
+**Safe Execution (Tier 1):**
+```bash
+python cli.py execute "echo Hello World"
+```
+
+**Blocked Destructive Execution (Tier 3):**
+```bash
+python cli.py execute "rm -rf .git"
+```
+
+### Demo 3: The CI/CD GitHub Webhook
+Start the ASTra FastAPI webhook server to intercept GitHub Pull Requests in real-time.
+```bash
+# Terminal 1: Start the Server
+python cli.py serve
+```
+```bash
+# Terminal 2: Send a Mock PR Payload
+curl -X POST http://127.0.0.1:8000/webhook -H "Content-Type: application/json" -d @examples/mock_pr_payload.json
+```
