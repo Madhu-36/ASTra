@@ -7,7 +7,7 @@ def main():
     Demonstrates a simulated CI/webhook flow where a PR introduces a change.
     Instead of passing the entire file to the model, we use AST slicing.
     """
-    print("=== Antigravity Dev: End-to-End Diff Review Example ===")
+    print("=== ASTra Dev: End-to-End Diff Review Example ===")
     
     # 1. Simulate a target file
     sample_file = "sample_target.py"
@@ -59,3 +59,4 @@ def utils_helper():
 
 if __name__ == "__main__":
     main()
+

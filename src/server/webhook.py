@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from src.slicer.ast_parser import CodeSlicer
 from src.engine.explainer import EvidenceEngine
 
-app = FastAPI(title="Antigravity Webhook Server", description="CI/CD GitHub PR Integration")
+app = FastAPI(title="ASTra Webhook Server", description="CI/CD GitHub PR Integration")
 slicer = CodeSlicer()
 
 class PRPayload(BaseModel):

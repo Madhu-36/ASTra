@@ -7,7 +7,7 @@ class LocalRepositoryRAG:
     """
     Lightweight local vector index over AST structure and project context.
     """
-    def __init__(self, persist_directory: str = "./.antigravity_chroma"):
+    def __init__(self, persist_directory: str = "./.ASTra_chroma"):
         self.client = chromadb.PersistentClient(path=persist_directory)
         self.collection = self.client.get_or_create_collection(name="codebase_slices")
         self.slicer = CodeSlicer()
@@ -73,3 +73,5 @@ class LocalRepositoryRAG:
                     count += 1
                     
         return count
+
+

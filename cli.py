@@ -5,7 +5,7 @@ from src.policy.classifier import PolicyGate, RiskTier
 from src.sandbox.executor import SandboxExecutor
 from src.engine.explainer import EvidenceEngine
 
-app = typer.Typer(help="Antigravity Dev: Security-First, Repository-Local Action Layer")
+app = typer.Typer(help="ASTra Dev: Security-First, Repository-Local Action Layer")
 console = Console()
 
 @app.command()
@@ -80,3 +80,4 @@ def serve(host: str = "127.0.0.m0.1", port: int = 8000):
 
 if __name__ == "__main__":
     app()
+
