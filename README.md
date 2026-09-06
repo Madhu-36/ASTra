@@ -10,6 +10,8 @@ Integrating generative AI directly into development environments comes with two 
 ![Track](https://img.shields.io/badge/Track-Developer_Tools-orange?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.10+-yellow?style=for-the-badge)
 
+**Built by Team: Root Coders | Lead Developer: Madhu S**
+
 ASTra is an edge-native execution firewall that protects developers from dangerous AI-generated commands. By turning the iQOO smartphone into a hardware security key, ASTra intercepts, grades, and sandboxes autonomous terminal commands using local LLMs on the Snapdragon NPU.
 
 ## 🌟 The Problem

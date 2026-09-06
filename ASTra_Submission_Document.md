@@ -1,4 +1,6 @@
 # ASTra: Edge-Native Security Action Layer
+**Team:** Root Coders  
+**Lead Developer:** Madhu S  
 **Event:** iQOO City Battle Hackathon (Aug–Oct 2026)  
 **Track:** 06 - Developer Tools  
 **Format:** Phone-First (Red Light / Green Light)
