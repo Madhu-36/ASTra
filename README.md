@@ -4,63 +4,48 @@
 
 ## The Problem
 Integrating generative AI directly into development environments comes with two major risks:
-1. **Context Blindness (Hallucinations):** Feeding an entire 2,000-line file to an AI to review a 3-line change overwhelms the model, leading to hallucinations.
-2. **Unsafe Execution:** Allowing autonomous agents to execute shell commands directly on a host machine is extremely dangerous (e.g., executing `rm -rf /` or dropping a database).
+# 🛡️ ASTra: Edge-Native Security Action Layer
 
-## Our Solution (Architecture)
-ASTra decouples generation from execution through five core components:
+![ASTra Banner](https://img.shields.io/badge/iQOO-Hackathon_2026-blue?style=for-the-badge)
+![Track](https://img.shields.io/badge/Track-Developer_Tools-orange?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3.10+-yellow?style=for-the-badge)
 
-1. **Method-Level AST Slicer:** Uses `tree-sitter` to pinpoint changed lines and extract *only* the specific function/class enclosing it, drastically reducing prompt bloat.
-2. **Local RAG Retrieval:** Uses `ChromaDB` to build an offline vector database of semantic code chunks, giving the AI hyper-relevant context.
-3. **LLM Policy Gate:** An LLM acts as a security guard, reading proposed commands and assigning them a Risk Tier (1=Safe, 2=Write, 3=Destructive).
-4. **Docker Sandbox Executor:** Safely executes Tier 1/2 commands inside an isolated Docker container, while completely blocking Tier 3 commands pending explicit human approval.
-5. **Evidence Explanation Engine:** Links sandbox execution outputs back to the original AST slice to generate transparent Evidence Reports.
+ASTra is an edge-native execution firewall that protects developers from dangerous AI-generated commands. By turning the iQOO smartphone into a hardware security key, ASTra intercepts, grades, and sandboxes autonomous terminal commands using local LLMs on the Snapdragon NPU.
+
+## 🌟 The Problem
+When developers use autonomous AI agents (like AutoGPT or Copilot) to execute code, a hallucination can be disastrous. An AI executing `rm -rf /` or `drop database` can ruin a machine. Furthermore, sending enterprise code to cloud APIs for security checks violates privacy policies and causes immense latency.
+
+## 🚀 The ASTra Solution
+ASTra decouples generation from execution. 
+1. **Laptop (Green Light):** The AI proposes a command.
+2. **Office Kit Bridge:** The command is beamed to the iQOO smartphone.
+3. **Snapdragon Validation:** The phone's local LLM (running entirely offline) grades the intent into 3 Risk Tiers.
+4. **Execution:** 
+   - 🟢 **Tier 1 (Safe):** Executed instantly.
+   - 🟡 **Tier 2 (Write):** Executed strictly inside an isolated Docker Sandbox.
+   - 🔴 **Tier 3 (Destructive):** Hard-blocked. Requires biometric/voice approval on the phone.
+
+## 🏗️ Deep Technical Architecture
+Unlike simple API wrappers, ASTra utilizes deep infrastructure:
+* **Tree-sitter AST Slicing:** Extracts exact method-level context so small NPU models don't crash from memory overload.
+* **ChromaDB / SQLite:** Local RAG (Retrieval-Augmented Generation) for offline project semantic memory.
+* **Docker Sandboxing:** Ephemeral container isolation.
+* **FastAPI:** CI/CD Webhook interception.
 
 ---
 
-## 🛠️ Quick Start & Setup
+## 🛠️ Quick Start Guide for Judges
 
-We have included automated setup scripts for judges to test ASTra quickly!
-
-### 1. Run the Setup Script
-**Windows (PowerShell):**
+### 1. 1-Click Setup (Windows)
+We have provided automated setup scripts to make evaluation frictionless.
 ```powershell
 .\setup.ps1
 ```
+*(This creates the virtual environment, installs Tree-sitter, Chroma, and Pytest).*
 
-**Linux/Mac:**
-```bash
-chmod +x setup.sh
-./setup.sh
-```
-
-### 2. Add your API Key
-The setup script creates an `.env` file. Open it and add your OpenAI API key (or point it to a local Ollama instance):
-```
-OPENAI_API_KEY=your_key_here
-```
-
----
-
-## 💻 Running the Demo
-
-Activate the virtual environment:
-```bash
-# Windows
+### 2. Activate the Environment
+```powershell
 .\venv\Scripts\Activate.ps1
-
-# Linux/Mac
-source venv/bin/activate
-```
-
-### Demo 1: Method-Level AST Context Slicing
-See how ASTra intelligently extracts just a specific method rather than feeding the LLM an entire file.
-```bash
-python examples/diff_review.py
-```
-
-### Demo 2: The Security Policy Gate
-See the LLM intercept and classify intents dynamically.
 
 **Safe Execution (Tier 1):**
 ```bash
